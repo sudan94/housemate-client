@@ -7,6 +7,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
+import { useGetGroupsTask } from '../hooks/useGetGroupTask';
 
 function createData(name, calories, fat, carbs) {
   return { name, calories, fat, carbs };
@@ -20,18 +21,24 @@ const rows = [
   createData('Gingerbread', 356, 16.0, 49),
 ];
 
-function renderSwitch(param) {
-  switch(param) {
-    case 'Completed':
-      return 'success';
-    case 'Pending':
-      return 'error';
-    default:
-      return 'warning';
+function renderSwitch(param, is_completed) {
+  if (is_completed == true){
+    return ['success', 'Completed']
+  }
+  let today = new Date();
+  let due_date = new Date(param);
+  if(today <= due_date){
+    return ['warning','Due']
+  }else {
+    return ['error','Pending']
   }
 }
 
-export default function TaskTable() {
+export default function TaskTable({item}) {
+  const {data, isLoading}  = useGetGroupsTask(item);
+  if(isLoading){
+    return <div>Loading</div>
+  }
   return (
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -44,7 +51,7 @@ export default function TaskTable() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
+          {data.map((row) => (
             <TableRow
               key={row.name}
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -52,10 +59,10 @@ export default function TaskTable() {
               <TableCell component="th" scope="row">
                 {row.name}
               </TableCell>
-              <TableCell align="right">{row.calories}</TableCell>
-              <TableCell align="right">{row.fat}</TableCell>
+              <TableCell align="right">{row.title}</TableCell>
+              <TableCell align="right">{row.due_date}</TableCell>
 
-              <TableCell align="right"><Chip label={row.carbs} color={renderSwitch(row.carbs)} /></TableCell>
+              <TableCell align="right"><Chip label={renderSwitch(row.due_date, row.is_completed)[1]} color={renderSwitch(row.due_date, row.is_completed)[0]} /></TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -1,10 +1,13 @@
 import * as React from "react";
+import { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Fab, Grid, Stack, TextField, styled } from "@mui/material";
 import Paper from "@mui/material/Paper";
+import { useCreateGroup } from "../hooks/useCreateGroup";
+import { useQueryClient } from "@tanstack/react-query";
 
 const style = {
   position: "absolute",
@@ -41,6 +44,36 @@ export default function BasicModal() {
   const handleClose = () => setOpen(false);
   const handleOpen = () => setOpen(true);
 
+  const { mutate, isPending } = useCreateGroup();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const queryClient = useQueryClient();
+  const handleSubmit = () => {
+    // if (!title || !description) {
+    //   toast({
+    //     variant: "destructive",
+    //     title: "One or more fields are empty",
+    //     description: "Please fill out both fields.",
+    //   });
+    //   return;
+    // }
+
+    mutate(
+      { title, description },
+      {
+        onSuccess: () => {
+          setTitle("");
+          setDescription("");
+          queryClient.invalidateQueries({ queryKey: ["groups"] });
+          handleClose();
+        },
+        onError: (e) => {
+          console.log(e);
+        },
+      }
+    );
+  };
+
   return (
     <div>
       <Modal
@@ -60,6 +93,8 @@ export default function BasicModal() {
                 label="Title"
                 variant="outlined"
                 fullWidth
+                name="title"
+                onChange={(e) => setTitle(e.target.value)}
               />
             </Grid>
             <Grid item xs={12} sm={12} md={12} key="1">
@@ -70,6 +105,8 @@ export default function BasicModal() {
                 multiline
                 rows={4}
                 fullWidth
+                name="description"
+                onChange={(e) => setDescription(e.target.value)}
               />
             </Grid>
             <Grid item xs={12} sm={12} md={12} key="1" >
@@ -80,7 +117,7 @@ export default function BasicModal() {
                 flexWrap="wrap"
                 sx={{float:"right"}}
               >
-                <Button variant="contained" size="small" color="success">
+                <Button variant="contained" size="small"  onClick={handleSubmit} disabled={isPending} color="success">
                   {" "}
                   Submit
                 </Button>

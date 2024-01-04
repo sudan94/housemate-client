@@ -9,11 +9,11 @@ import { useParams } from "react-router-dom";
 
 const GroupDetail = () => {
   const {id} = useParams()
-  // console.log(id)
+
   return (
     <Layout>
         <GroupContainer item={id}/>
-        <TaskTable/>
+        <TaskTable item={id}/>
   </Layout>
   )
 }

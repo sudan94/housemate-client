@@ -25,6 +25,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useGetGroups } from "../hooks/useGetGroups";
 import { useGetGroupsUsers } from "../hooks/useGetGroupUsers";
+import { useGetGroupDetail } from "../hooks/useGetGRoupDetail";
 
 const style = {
   position: "absolute",
@@ -39,9 +40,11 @@ const style = {
 };
 
 export default function GroupContatiner({ item }) {
+
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
   const [open1, setOpen1] = React.useState(false);
   const handleOpen1 = () => setOpen1(true);
   const handleClose1 = () => setOpen1(false);
@@ -54,13 +57,13 @@ export default function GroupContatiner({ item }) {
   const handlePerson = (event) => {
     setPerson(event.target.value);
   };
+  const { data:group, isLoading: isLoadingDetail } = useGetGroupDetail(item);
 
   const { data, isLoading } = useGetGroupsUsers(item);
-  if (isLoading) {
+
+  if (isLoading || isLoadingDetail) {
     return <div>Loading</div>;
   }
-  console.log(data);
-
   return (
     <>
       <Card sx={{ minWidth: 275, mb: 5 }}>
@@ -68,9 +71,9 @@ export default function GroupContatiner({ item }) {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={8} md={9}>
               <Typography id="modal-modal-title" variant="h6" component="h2">
-                Group 1
+                {group.title}
               </Typography>
-              <Typography variant="body2">Descrption </Typography>
+              <Typography variant="body2"> {group.description} </Typography>
             </Grid>
             <Grid item xs={12} sm={2} md={1.5}>
               <Button
