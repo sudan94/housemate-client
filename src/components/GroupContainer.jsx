@@ -26,6 +26,8 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useGetGroups } from "../hooks/useGetGroups";
 import { useGetGroupsUsers } from "../hooks/useGetGroupUsers";
 import { useGetGroupDetail } from "../hooks/useGetGRoupDetail";
+import { useCreateUserGroup } from "../hooks/useCreateUserGroup";
+import { useQueryClient } from "@tanstack/react-query";
 
 const style = {
   position: "absolute",
@@ -60,6 +62,27 @@ export default function GroupContatiner({ item }) {
   const { data:group, isLoading: isLoadingDetail } = useGetGroupDetail(item);
 
   const { data, isLoading } = useGetGroupsUsers(item);
+
+  const { mutate, isPending } = useCreateUserGroup();
+
+  const [email, setEmail] = React.useState("");
+  const queryClient = useQueryClient();
+  const handleSubmit = () => {
+    mutate(
+      { group_id : Number(item), email },
+      {
+        onSuccess: () => {
+          setEmail("");
+          queryClient.invalidateQueries({ queryKey: ["groups_users"] });
+          handleClose();
+        },
+        onError: (e) => {
+          console.log(e);
+        },
+      }
+    );
+  };
+
 
   if (isLoading || isLoadingDetail) {
     return <div>Loading</div>;
@@ -124,8 +147,9 @@ export default function GroupContatiner({ item }) {
             variant="outlined"
             helperText="Add email for new members"
             fullWidth
+            name="email"
+            onChange={(e) => setEmail(e.target.value)}
           />
-
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             <MembersList />
           </Typography>
@@ -138,7 +162,7 @@ export default function GroupContatiner({ item }) {
                 flexWrap="wrap"
                 sx={{ float: "right" }}
               >
-                <Button variant="contained" size="small" color="success">
+                <Button variant="contained" size="small" onClick={handleSubmit} color="success">
                   {" "}
                   Submit
                 </Button>

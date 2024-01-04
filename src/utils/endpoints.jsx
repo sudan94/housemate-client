@@ -9,4 +9,8 @@ export const API_ENDPOINTS = {
     GROUP_DETAIL : "/group/",
     // CREATE GROUP
     GROUP_CREATE : "/group",
+    // CREATE GROUP
+    USERS : "/user",
+    // CREATE USER GROUP
+    USER_GROUP : "/group/userGroup",
   };

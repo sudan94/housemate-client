@@ -49,15 +49,6 @@ export default function BasicModal() {
   const [description, setDescription] = useState("");
   const queryClient = useQueryClient();
   const handleSubmit = () => {
-    // if (!title || !description) {
-    //   toast({
-    //     variant: "destructive",
-    //     title: "One or more fields are empty",
-    //     description: "Please fill out both fields.",
-    //   });
-    //   return;
-    // }
-
     mutate(
       { title, description },
       {
