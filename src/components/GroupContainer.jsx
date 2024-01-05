@@ -23,11 +23,11 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { useGetGroups } from "../hooks/useGetGroups";
 import { useGetGroupsUsers } from "../hooks/useGetGroupUsers";
 import { useGetGroupDetail } from "../hooks/useGetGRoupDetail";
 import { useCreateUserGroup } from "../hooks/useCreateUserGroup";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCreateGroupTask } from "../hooks/useCreateGroupTask";
 
 const style = {
   position: "absolute",
@@ -51,25 +51,21 @@ export default function GroupContatiner({ item }) {
   const handleOpen1 = () => setOpen1(true);
   const handleClose1 = () => setOpen1(false);
 
-  const [frequency, setFrequency] = React.useState("");
-  const handleFrequency = (event) => {
-    setFrequency(event.target.value);
-  };
-  const [person, setPerson] = React.useState("");
-  const handlePerson = (event) => {
-    setPerson(event.target.value);
-  };
-  const { data:group, isLoading: isLoadingDetail } = useGetGroupDetail(item);
+  const { data: group, isLoading: isLoadingDetail } = useGetGroupDetail(item);
 
   const { data, isLoading } = useGetGroupsUsers(item);
 
+  // Add user to group
   const { mutate, isPending } = useCreateUserGroup();
-
   const [email, setEmail] = React.useState("");
   const queryClient = useQueryClient();
   const handleSubmit = () => {
+    if (!email) {
+      alert("Please enter email");
+      return;
+    }
     mutate(
-      { group_id : Number(item), email },
+      { group_id: Number(item), email },
       {
         onSuccess: () => {
           setEmail("");
@@ -83,6 +79,45 @@ export default function GroupContatiner({ item }) {
     );
   };
 
+  // Add task to group
+  const queryClientTask = useQueryClient();
+
+  const { mutate: mutateTask, isPending: isPendingTask } = useCreateGroupTask();
+  const [title, setTitle] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [date, setDate] = React.useState("");
+  const [frequency, setFrequency] = React.useState("");
+  const [starting_user, setPerson] = React.useState("");
+  const handlePerson = (event) => {
+    setPerson(event.target.value);
+  };
+  const handleFrequency = (event) => {
+    setFrequency(event.target.value);
+  };
+  const handleSubmitTask = () => {
+    if ( !title || !description || !date || !frequency || !starting_user) {
+      alert("one of the field is empty");
+      return;
+    }
+    let new_date = date.toISOString().split('T')[0]
+    mutateTask(
+      { group_id: Number(item), email: starting_user, title, description, date:new_date, frequency,starting_user },
+      {
+        onSuccess: () => {
+          setTitle("");
+          setDescription("");
+          setDate("");
+          setStartingUser("");
+          setFrequency("");
+          queryClientTask.invalidateQueries({ queryKey: ["group_task"] });
+          handleClose1();
+        },
+        onError: (e) => {
+          console.log(e);
+        },
+      }
+    );
+  };
 
   if (isLoading || isLoadingDetail) {
     return <div>Loading</div>;
@@ -125,8 +160,8 @@ export default function GroupContatiner({ item }) {
         <CardActions>
           {data.map((item) => (
             <Tooltip title={item.email} placement="top-start">
-            <AccountCircleIcon/>
-          </Tooltip>
+              <AccountCircleIcon />
+            </Tooltip>
           ))}
         </CardActions>
       </Card>
@@ -162,7 +197,12 @@ export default function GroupContatiner({ item }) {
                 flexWrap="wrap"
                 sx={{ float: "right" }}
               >
-                <Button variant="contained" size="small" onClick={handleSubmit} color="success">
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleSubmit}
+                  color="success"
+                >
                   {" "}
                   Submit
                 </Button>
@@ -195,17 +235,21 @@ export default function GroupContatiner({ item }) {
               <Grid item xs={12} sm={12} md={12}>
                 <TextField
                   id="outlined-basic"
-                  label="Outlined"
+                  label="Title"
                   variant="outlined"
                   fullWidth
+                  onChange={(e) => setTitle(e.target.value)}
+                  name="title"
                 />
               </Grid>
               <Grid item xs={12} sm={12} md={12}>
                 <TextField
                   id="outlined-basic"
-                  label="Outlined"
+                  label="Descrption"
                   variant="outlined"
                   fullWidth
+                  onChange={(e) => setDescription(e.target.value)}
+                  name="description"
                 />
               </Grid>
               <Grid item xs={12} sm={12} md={8}>
@@ -250,15 +294,16 @@ export default function GroupContatiner({ item }) {
                   <Select
                     labelId="demo-simple-select-helper-label"
                     id="demo-simple-select-helper"
-                    value={person}
+                    value={starting_user}
                     label="Person"
                     onChange={handlePerson}
                   >
                     <MenuItem value="">
                       <em>None</em>
                     </MenuItem>
-                    <MenuItem value={1}>Sudan</MenuItem>
-                    <MenuItem value={2}>Shuvam</MenuItem>
+                    {data.map((item) => (
+                      <MenuItem value={item.id}>{item.email}</MenuItem>
+                    ))}
                   </Select>
                   <FormHelperText>
                     For custom days add number of days
@@ -271,6 +316,7 @@ export default function GroupContatiner({ item }) {
                 <DatePicker
                   label="Basic date picker"
                   views={["day", "month", "year"]}
+                  onChange={(e) => setDate(e)}
                 />
               </DemoContainer>
             </LocalizationProvider>
@@ -284,7 +330,12 @@ export default function GroupContatiner({ item }) {
                 flexWrap="wrap"
                 sx={{ float: "right" }}
               >
-                <Button variant="contained" size="small" color="success">
+                <Button
+                  variant="contained"
+                  onClick={handleSubmitTask}
+                  size="small"
+                  color="success"
+                >
                   {" "}
                   Submit
                 </Button>

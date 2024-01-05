@@ -13,4 +13,6 @@ export const API_ENDPOINTS = {
     USERS : "/user",
     // CREATE USER GROUP
     USER_GROUP : "/group/userGroup",
+    // CREATE USER TASK
+    USER_TASK : "/tasks",
   };
