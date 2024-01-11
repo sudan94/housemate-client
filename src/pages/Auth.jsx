@@ -1,7 +1,10 @@
+import Login from "../components/Login";
+
 const Auth = () => {
   return (
     <div>
-      Not logged in
+            <Login />
+
     </div>
   );
 }

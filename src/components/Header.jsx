@@ -13,6 +13,7 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { Link, useNavigate, useNavigation } from "react-router-dom";
+import Cookies from 'js-cookie';
 
 const pages = [
   {
@@ -24,7 +25,7 @@ const pages = [
     href: "/task",
   },
 ];
-const settings = ["Profile", "Logout"];
+const settings = ["Logout"];
 
 function Header() {
   const navigate = useNavigate();
@@ -45,6 +46,10 @@ function Header() {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+  const handleLogout = () => {
+    Cookies.remove('token');
+    navigate("/auth");
+  }
 
   return (
     <>
@@ -140,9 +145,9 @@ function Header() {
             </Box>
 
             <Box sx={{ flexGrow: 0 }}>
-              <Tooltip title="Open settings">
+              <Tooltip title={Cookies.get('name')}>
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                  <Avatar alt={Cookies.get('name')} src={Cookies.get('image')} />
                 </IconButton>
               </Tooltip>
               <Menu
@@ -162,7 +167,7 @@ function Header() {
                 onClose={handleCloseUserMenu}
               >
                 {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                  <MenuItem key={setting} onClick={handleLogout}>
                     <Typography textAlign="center">{setting}</Typography>
                   </MenuItem>
                 ))}

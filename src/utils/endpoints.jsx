@@ -19,4 +19,6 @@ export const API_ENDPOINTS = {
     USER : "/user",
     //  GET TOKEN
     LOGIN : "/login",
+    // Active User
+    ACTIVE_USER : "/active",
   };

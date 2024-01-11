@@ -4,9 +4,10 @@ import request from "../utils/requests";
 
 export const useGetUsers = () => {
   return useQuery({
-    queryKey: ["users"],
+    queryKey: ["active_users"],
+    retry: false,
     queryFn: async () => {
-      const { data } = await request.get(API_ENDPOINTS.USERS);
+      const { data } = await request.get(API_ENDPOINTS.ACTIVE_USER);
       return data;
     },
   });
